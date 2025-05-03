@@ -41,9 +41,13 @@ commentSchema.virtual('replies', {
     foreignField: 'parentComment'
 });
 
-// Compound index for querying comments by video
-// Used to optimize queries that fetch comments for a specific video
-// and sort them by creation date in descending order
+// Index for retrieving video comments with sorting
 commentSchema.index({ video: 1, createdAt: -1 });
+
+// Index for nested comments (replies)
+commentSchema.index({ parentComment: 1, createdAt: -1 });
+
+// Index for user's comments
+commentSchema.index({ owner: 1, createdAt: -1 });
 
 export const Comment = mongoose.model("Comment", commentSchema);

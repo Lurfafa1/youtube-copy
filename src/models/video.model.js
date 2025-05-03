@@ -42,6 +42,12 @@ const videoSchema = new Schema(
     }
 )
 
+// Add indexes for common query patterns
+videoSchema.index({ Owner: 1, createdAt: -1 }) // For user's videos feed
+videoSchema.index({ title: "text", description: "text" }) // For search functionality
+videoSchema.index({ isPublished: 1, createdAt: -1 }) // For public feed
+videoSchema.index({ views: -1 }) // For trending videos
+
 videoSchema.plugin(mongooseAggregatePaginate);
 
 export const Video = mongoose.model("Video", videoSchema);

@@ -53,6 +53,14 @@ const userSchema = new Schema(
     }
 )
 
+// Add compound index for efficient user lookup during auth
+userSchema.index({ email: 1, username: 1 }) 
+
+// Add index for username search (channel discovery)
+userSchema.index({ username: 1, fullname: 1 })
+
+// Add index for watch history optimization
+userSchema.index({ "watchHistory": 1, createdAt: -1 })
 
 // use pre-save middleware to hash password before saving in db using bcrypt
 userSchema.pre('save', async function (next) {

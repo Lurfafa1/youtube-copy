@@ -1,6 +1,5 @@
 import mongoose, { model, Schema } from "mongoose";
 
-
 const likesSchema = new Schema(
     {
         userId: {
@@ -24,10 +23,13 @@ const likesSchema = new Schema(
     }
 )
 
-// Compound index: Prevents a user from liking the same item multiple times
-likesSchema.index({ userId: 1, liked: 1, likedType: 1, }, { unique: true })
+// Prevent duplicate likes and optimize like status checks
+likesSchema.index({ userId: 1, liked: 1, likedType: 1 }, { unique: true })
 
+// Optimize like counts per item
+likesSchema.index({ liked: 1, likedType: 1 })
 
-
+// For user's liked items
+likesSchema.index({ userId: 1, createdAt: -1 })
 
 export const Like = mongoose.model('Like', likesSchema)
