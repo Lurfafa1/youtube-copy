@@ -38,7 +38,7 @@ const createPost = asyncHandler(async (req, res) => {
         visibility
     })
 
-    res.status(201).json(new ApiResponse(201, "Post created successfully", post));
+    return res.status(201).json(new ApiResponse(201, "Post created successfully", post));
 
 })
 
@@ -87,7 +87,7 @@ const updatePost = asyncHandler(async (req, res) => {
     // Save the updated post
     await post.save();
 
-    res.status(200).json(new ApiResponse(200, "Post updated successfully", post));
+    return res.status(200).json(new ApiResponse(200, "Post updated successfully", post));
 
 })
 
@@ -115,13 +115,40 @@ const deletePost = asyncHandler(async (req, res) => {
     // Delete the post
     await post.deleteOne();
 
-    res.status(200).json(new ApiResponse(200, {}, "Post deleted successfully"));
+    return res.status(200).json(new ApiResponse(200, {}, "Post deleted successfully"));
 
 })
 
 
 
+const likePost = asyncHandler(async (req, res) => {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
 
+
+    // Check if post exists
+    const isLiked = await Post.includesLike(req.user._id);
+
+    if (isLiked) {
+        // User has already liked the post, so remove the like
+        post.likes.pull(req.user._id); // // Remove like
+    } else {
+        // User has not liked the post, so add the like
+        post.likes.push(req.user._id); // Add like
+    }
+
+    await post.save();
+
+    return res
+        .status(200)
+        .json(new ApiResponse(
+            200,
+            { liked: !isLiked }, // Returns new like status
+            `Post ${isLiked ? "unliked" : "liked"} successfully`,
+        ));
+})
 
 
 
@@ -129,5 +156,6 @@ const deletePost = asyncHandler(async (req, res) => {
 export {
     createPost,
     updatePost,
-    deletePost
+    deletePost,
+    likePost
 };

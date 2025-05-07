@@ -1,6 +1,6 @@
 import { Like } from "../models/likes.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/apiResponse.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 
 // createLike controller
@@ -29,7 +29,6 @@ const createLike = asyncHandler(async (req, res) => {
     }
 
     // If the user has not liked the item, create a new like
-
     const newLike = await Like.create({
         userId,
         liked: likedItem._id,
