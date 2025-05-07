@@ -151,11 +151,82 @@ const likePost = asyncHandler(async (req, res) => {
 })
 
 
+// Get all posts (with pagination and filters)
+const getAllPosts = asyncHandler(async (req, res) => {
+    const {
+        page = 1, // Current page number (default: 1)
+        limit = 10, // Posts per page (default: 10)
+        tags, // Filter by tag (optional)
+        author, // Filter by author (optional)
+        visibility = "public" // Post visibility (default: public)
+    } = req.query;
+
+
+    const query = { visibility }; // Starts with visibility filter
+    if (tags) query.tags = tags; // Adds tag filter if provided
+    if (author) query.author = author; // Adds author filter if provided
+
+
+
+    const posts = await Post.find(query)
+        .populate("author", "username avatar") // Get author details
+        .sort({ createdAt: -1 }) // Newest first
+        .skip((page - 1) * limit) // Skip posts for previous pages
+        .limit(limit); // Limit posts to the specified page size
+
+
+    const totalPosts = await Post.countDocuments(query);
+
+    const totalPages = Math.ceil(totalPosts / limit);
+
+
+    return res.status(200).json(
+        new ApiResponse(200, {
+            posts,
+            totalPages,
+            currentPage: page
+        }, "Posts fetched successfully")
+    );
+
+})
+
+
+
+
+// Get post by ID
+const getPostById = asyncHandler(async (req, res) => {
+    const post = await Post.findById(req.params.id)
+        .populate("author", "username avatar") // Get author details
+        .populate("likes", "username") // Get likes details
+        .populate({ // Nested population for comments
+            path: "comments",
+            populate: {
+                path: "author",
+                select: "username avatar"
+            }
+        });
+
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    // Check visibility permissions
+    if (post.visibility !== "public" &&
+        post.author._id.toString() !== req.user?._id.toString()) {
+        throw new ApiError(403, "You don't have permission to view this post");
+    }
+
+    return res.status(200).json(new ApiResponse(200, post));
+});
+
+
 
 
 export {
     createPost,
     updatePost,
     deletePost,
-    likePost
+    likePost,
+    getPostById,
+    getAllPosts
 };
