@@ -7,9 +7,14 @@ const commentSchema = new Schema(
             required: true,// you cannot create a comment without content
             trim: true // Automatically removes whitespace from both ends of the string
         },
-        video: {
+        contentType: {
+            type: String,
+            enum: ['video', 'post'],
+            required: true
+        },
+        contentId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Video',
+            refPath: 'contentType',
             required: true
         },
         owner: {
@@ -25,7 +30,15 @@ const commentSchema = new Schema(
         isReply: { // This field indicates whether a comment is a direct comment or a reply to another comment
             type: Boolean,
             default: false // false means it's a top-level comment (directly on a video)
-        } // true means it's a reply to another comment
+        }, // true means it's a reply to another comment
+        likes: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        }],
+        isEdited: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         timestamps: true,
@@ -41,8 +54,19 @@ commentSchema.virtual('replies', {
     foreignField: 'parentComment'
 });
 
-// Index for retrieving video comments with sorting
-commentSchema.index({ video: 1, createdAt: -1 });
+// Virtual for likes count
+commentSchema.virtual('likesCount').get(function () {
+    return this.likes?.length || 0;
+});
+
+// Index for likes
+commentSchema.index({ likes: 1 });
+
+
+// Index for content-based queries
+commentSchema.index({ contentType: 1, contentId: 1, createdAt: -1 });
+
+
 
 // Index for nested comments (replies)
 commentSchema.index({ parentComment: 1, createdAt: -1 });
