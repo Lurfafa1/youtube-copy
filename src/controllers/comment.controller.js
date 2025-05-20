@@ -1,23 +1,38 @@
-/*
-
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Comment } from "../models/comment.model.js";
+import { Video } from "../models/video.model.js";
+import { Post } from "../models/post.model.js";
 
-// Create a new comment or reply
+
+// Create a new comment or reply for a video or post
 const createComment = asyncHandler(async (req, res) => {
     const { content, parentId } = req.body;
-    const { postId } = req.params;
+    const { contentType, contentId } = req.params;
+
 
     if (!content?.trim()) {
         throw new ApiError(400, "Comment content is required");
     }
 
+    // Validate content Type
+    if (!["video", "post"].includes(contentType)) {
+        throw new ApiError(400, "Invalid contentType");
+    }
+
+
+
+    const postId = contentType === "video" ? (await Video.findById(contentId))._id : (await Post.findById(contentId))._id;
+
+
+
     const commentData = {
         content,
-        post: postId,
-        author: req.user._id
+        contentType,
+        contentId,
+        author: req.user._id,
+        isReply: !!parentId // Set isReply to true if parentId exists
     };
 
     // If parentId exists, it's a reply
@@ -29,34 +44,59 @@ const createComment = asyncHandler(async (req, res) => {
         commentData.parentComment = parentId;
     }
 
+    // Create the comment
     const comment = await Comment.create(commentData);
+
 
     // Populate necessary fields
     const populatedComment = await Comment.findById(comment._id)
         .populate("author", "username avatar")
-        .populate("likes", "username");
+        .populate("likes", "username")
+        .populate({
+            path: "parentComment",
+            populate: {
+                path: "author",
+                select: "username avatar"
+            }
+        });
+
 
     return res.status(201).json(
         new ApiResponse(201, populatedComment, "Comment added successfully")
     );
 });
 
-// Get comments for a post (with pagination)
-const getPostComments = asyncHandler(async (req, res) => {
-    const { postId } = req.params;
-    const { page = 1, limit = 10, sort = "newest" } = req.query;
 
-    // Get top-level comments only (no replies)
+// Get comments for a video or post (with pagination)
+const getComments = asyncHandler(async (req, res) => {
+    const { contentType, contentId } = req.params;
+    const {
+        page = 1,
+        limit = 10,
+        sort = "newest"
+    } = req.query;
+
+    // Validate content Type
+    if (!["video", "post"].includes(contentType)) {
+        throw new ApiError(400, "Invalid contentType");
+    }
+
+
+
+    // query to find comments
     const query = {
-        post: postId,
-        parentComment: null
+        contentType,
+        contentId,
+        parentComment: null // Get top-level comments only (no replies)
     };
+
 
     const sortOptions = {
         newest: { createdAt: -1 },
         oldest: { createdAt: 1 },
         popular: { likesCount: -1 }
     };
+
 
     const comments = await Comment.find(query)
         .populate("author", "username avatar")
@@ -179,4 +219,3 @@ export {
     toggleCommentLike
 };
 
-*/
