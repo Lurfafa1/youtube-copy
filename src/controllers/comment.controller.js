@@ -191,39 +191,11 @@ const deleteComment = asyncHandler(async (req, res) => {
     );
 });
 
-// Toggle like on comment
-const toggleCommentLike = asyncHandler(async (req, res) => {
-    const { commentId } = req.params;
-    const comment = await Comment.findById(commentId);
-
-    if (!comment) {
-        throw new ApiError(404, "Comment not found");
-    }
-
-    const isLiked = comment.likes.includes(req.user._id);
-
-    if (isLiked) {
-        comment.likes.pull(req.user._id);
-    } else {
-        comment.likes.push(req.user._id);
-    }
-
-    await comment.save();
-
-    return res.status(200).json(
-        new ApiResponse(
-            200,
-            { liked: !isLiked },
-            `Comment ${isLiked ? "unliked" : "liked"} successfully`
-        )
-    );
-});
 
 export {
     createComment,
     getComments,
     updateComment,
-    deleteComment,
-    toggleCommentLike
+    deleteComment
 };
 

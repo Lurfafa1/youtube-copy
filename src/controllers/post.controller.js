@@ -92,7 +92,6 @@ const updatePost = asyncHandler(async (req, res) => {
 })
 
 
-
 const deletePost = asyncHandler(async (req, res) => {
     // where is the postId coming from?
     const post = await Post.findById(req.params.postId);
@@ -118,57 +117,6 @@ const deletePost = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, {}, "Post deleted successfully"));
 
 })
-
-
-
-const likePost = asyncHandler(async (req, res) => {
-    const post = await Post.findById(req.params.postId);
-    if (!post) {
-        throw new ApiError(404, "Post not found");
-    }
-
-
-    // Check if post exists
-    const isLiked = await Post.includesLike(req.user._id);
-
-    if (isLiked) {
-        // User has already liked the post, so remove the like
-        post.likes.pull(req.user._id); // // Remove like
-    } else {
-        // User has not liked the post, so add the like
-        post.likes.push(req.user._id); // Add like
-    }
-
-    await post.save();
-
-    return res
-        .status(200)
-        .json(new ApiResponse(
-            200,
-            { liked: !isLiked }, // Returns new like status
-            `Post ${isLiked ? "unliked" : "liked"} successfully`,
-        ));
-})
-
-
-
-// check like post status
-const checkLikeStatus = asyncHandler(async (req, res) => {
-    const post = await Post.findById(req.params.postId);
-    if (!post) {
-        throw new ApiError(404, "Post not found");
-    }
-
-    // Check if the user has liked the post
-    const isLiked = post.likes.includes(req.user._id);
-
-    return res
-        .status(200)
-        .json(new ApiResponse(200, { liked: isLiked }, "Like status fetched successfully"));
-})
-
-
-
 
 
 // Get all posts (with pagination and filters)
@@ -212,7 +160,6 @@ const getAllPosts = asyncHandler(async (req, res) => {
 
 
 
-
 // Get post by ID
 const getPostById = asyncHandler(async (req, res) => {
     const post = await Post.findById(req.params.postId)
@@ -241,8 +188,6 @@ const getPostById = asyncHandler(async (req, res) => {
 
 
 
-
-
 // posts made by user like youtube
 const getPostsByUser = asyncHandler(async (req, res) => {
     const userId = req.params.userId;
@@ -265,7 +210,6 @@ export {
     updatePost,
     deletePost,
     likePost,
-    checkLikeStatus,
     getPostById,
     getAllPosts,
     getPostsByUser

@@ -7,6 +7,7 @@ import {
     videos
 } from "../controllers/video.controller.js";
 
+
 const videoRouter = Router();
 
 videoRouter.route('/')
@@ -27,5 +28,6 @@ videoRouter.route('/delete/:videoId')
         verifyToken,
         deleteVideo
     );
+
 
 export { videoRouter };
