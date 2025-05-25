@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/apiErrors.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 import { Comment } from "../models/comment.model.js";
 import { Video } from "../models/video.model.js";
 import { Post } from "../models/post.model.js";
@@ -23,7 +23,15 @@ const createComment = asyncHandler(async (req, res) => {
 
 
 
-    const postId = contentType === "video" ? (await Video.findById(contentId))._id : (await Post.findById(contentId))._id;
+    //const postId = contentType === "video" ? (await Video.findById(contentId))._id : (await Post.findById(contentId))._id;
+
+
+    // Verify if content (video/post) exists
+    if (contentType === "video") {
+        await Video.findById(contentId);
+    } else {
+        await Post.findById(contentId);
+    }
 
 
 
@@ -213,7 +221,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 
 export {
     createComment,
-    getPostComments,
+    getComments,
     updateComment,
     deleteComment,
     toggleCommentLike

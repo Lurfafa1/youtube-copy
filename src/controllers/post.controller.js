@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiErrors.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiResponse } from "../utils/apiResponse.js";
 import { Post } from "../models/post.model.js";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 
@@ -151,6 +151,26 @@ const likePost = asyncHandler(async (req, res) => {
 })
 
 
+
+// check like post status
+const checkLikeStatus = asyncHandler(async (req, res) => {
+    const post = await Post.findById(req.params.postId);
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    // Check if the user has liked the post
+    const isLiked = post.likes.includes(req.user._id);
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, { liked: isLiked }, "Like status fetched successfully"));
+})
+
+
+
+
+
 // Get all posts (with pagination and filters)
 const getAllPosts = asyncHandler(async (req, res) => {
     const {
@@ -195,7 +215,7 @@ const getAllPosts = asyncHandler(async (req, res) => {
 
 // Get post by ID
 const getPostById = asyncHandler(async (req, res) => {
-    const post = await Post.findById(req.params.id)
+    const post = await Post.findById(req.params.postId)
         .populate("author", "username avatar") // Get author details
         .populate("likes", "username") // Get likes details
         .populate({ // Nested population for comments
@@ -222,11 +242,31 @@ const getPostById = asyncHandler(async (req, res) => {
 
 
 
+
+// posts made by user like youtube
+const getPostsByUser = asyncHandler(async (req, res) => {
+    const userId = req.params.userId;
+    const posts = await Post.find({ author: userId })
+        .populate("author", "username avatar") // Get author details
+        .sort({ createdAt: -1 }); // Newest first
+
+    if (!posts) {
+        throw new ApiError(404, "No posts found for this user");
+    }
+
+    return res.status(200).json(new ApiResponse(200, posts));
+});
+
+
+
+
 export {
     createPost,
     updatePost,
     deletePost,
     likePost,
+    checkLikeStatus,
     getPostById,
-    getAllPosts
+    getAllPosts,
+    getPostsByUser
 };
