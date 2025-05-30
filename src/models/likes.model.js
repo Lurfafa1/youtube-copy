@@ -16,6 +16,10 @@ const likesSchema = new Schema(
             type: String,
             enum: ['Video', 'Post', 'Comment'],
             required: true
+        },
+        like: {
+            type: Boolean,
+            default: true // true for like, false for dislike
         }
     },
     {
@@ -31,5 +35,7 @@ likesSchema.index({ liked: 1, likedType: 1 })
 
 // For user's liked items
 likesSchema.index({ userId: 1, createdAt: -1 })
+
+
 
 export const Like = mongoose.model('Like', likesSchema)

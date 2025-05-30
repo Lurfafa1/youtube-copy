@@ -5,28 +5,12 @@ import { validateLike } from "../middlewares/validateLike.middleware.js";
 
 const likesRouter = Router();
 
-// Middleware to parse URL parameters
-const parseParams = (req, _, next) => {
-    const { likedType, likedId } = req.params;
-
-    // Set parameters based on request method
-    if (req.method === 'POST') {
-        req.body.likedType = likedType;
-        req.body.liked = likedId;
-    } else {
-        req.query.likedType = likedType;
-        req.query.liked = likedId;
-    }
-
-    next();
-};
 
 // Like/Unlike routes
 // Protected routes - need authentication
-likesRouter.route('/:likedType/:likedId')
+likesRouter.route('/:likedType')
     .post(
         verifyToken,
-        parseParams,
         validateLike,
         createLike
     );
@@ -35,8 +19,6 @@ likesRouter.route('/:likedType/:likedId')
 // Public route - no auth needed
 likesRouter.route('/:likedType/:likedId/count')
     .get(
-        parseParams,
-        validateLike,
         countLikes
     );
 

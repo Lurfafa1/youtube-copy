@@ -41,11 +41,10 @@ const validateLikedItem = async (liked, likedType) => {
 // validateLike middleware
 const validateLike = asyncHandler(async (req, _, next) => {
 
-    const likedType = req.body.likedType || req.query.likedType;
-    const liked = req.body.liked || req.query.liked;
+    const { likedId, likedType } = req.body; // Get likedId and likedType from req.body
 
 
-    if (!liked || !likedType) {
+    if (!likedId || !likedType) {
         throw new ApiError(400, "Both liked ID and type are required");
     }
 
@@ -57,7 +56,7 @@ const validateLike = asyncHandler(async (req, _, next) => {
 
 
     // Validate if the item exists
-    const likedItem = await validateLikedItem(liked, likedType);
+    const likedItem = await validateLikedItem(likedId, likedType);
 
 
 
