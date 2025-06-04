@@ -6,7 +6,7 @@ import {
     updateComment,
     deleteComment,
 } from "../controllers/comment.controller.js";
-
+import { createLike } from "../controllers/likes.controller.js";
 const commentRouter = Router();
 
 
@@ -19,7 +19,7 @@ commentRouter.route('/:commentId')
     .delete(verifyToken, deleteComment);
 
 commentRouter.route('/:commentId/like')
-    .post(verifyToken, toggleCommentLike)
-    .delete(verifyToken, toggleCommentLike);
+    .post(verifyToken, createLike)
+    .delete(verifyToken, createLike);
 
 export { commentRouter };
