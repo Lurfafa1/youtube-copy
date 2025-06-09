@@ -209,7 +209,6 @@ export {
     createPost,
     updatePost,
     deletePost,
-    likePost,
     getPostById,
     getAllPosts,
     getPostsByUser
