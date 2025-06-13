@@ -3,7 +3,7 @@ import { ApiError } from '../utils/apiErrors.js';
 import { User } from '../models/user.model.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import mongoose from 'mongoose';
-import { Subscription } from '../models/subscription.model.js';
+import { Subscription } from '../models/subscriptions.models.js';
 
 
 //   Subscribe to a channel
