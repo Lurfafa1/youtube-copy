@@ -5,9 +5,9 @@ import cors from 'cors'
 
 const app = express()
 
-
+// "http://localhost:3000" || 'http://0.0.0.0'
 app.use(cors({
-    origin: 'localhost:4000' || '0.0.0.0',
+    origin: '0.0.0.0',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }))
